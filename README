@@ -1,0 +1,65 @@
+Instalation
+===============
+This product is developed with the following software stack
+- apache2
+- mysql 14.14 distrib 5.1.37
+- php 5.2.10
+- phpunit 3.316
+- mod_rewrite
+- php GD sudo apt-get install php5-gd
+
+Install the application into your folder and create a virtual host
+Here are the apache directives for the httpd.conf file
+
+NameVirtualHost 127.0.0.1
+<Directory "/path_to_the_code">
+    Options Indexes FollowSymLinks ExecCGI Includes
+    AllowOverride All
+    Order allow,deny
+    Allow from all
+</Directory>
+
+NameVirtualHost 127.0.0.1
+<VirtualHost 127.0.0.1>
+    DocumentRoot "/path_to_the_code"
+    ServerName application_name.tld
+</VirtualHost>
+
+Installing Jobs
+==================
+The framework supports programatic jobs. Each class in the app/jobs folder is a descriete task.
+To support jobs you need to add a cron job to execute
+    scripts/cron.sh
+The period at which you set up this cron job is the fastest that a job can be scheduled for within the frame work.
+We recomend that you set this up to run hourly or daily depending on your application.
+
+
+Folders 
+==================
+lib > liburaries that are used by the application
+lib/framework > the framework itself", true);
+lib/framework/tests > tests for the framework
+lib/framework/tests/unit > framework unit tests
+
+app > all the code files
+app/helper > utility clases that are shared accross all code files", true);
+app/controler > objects that execute business logic", true);
+app/model > the ORM style objects", true);
+app/view > objects that express content", true);
+app/jobs > scripts that are run by a cron process", true);
+
+ > root folder for the application
+content > dynamic files creted by the application
+database > scripts for upgrading or down grading the database
+doc > dcoumentation about the application
+logs > records that are created by the application to allow monitoring of activity
+scripts > shell scripts that are used by framework
+style > stylesheets
+images > graphics
+tests > the tests objects and scrips
+tests/test_data > scrips to install test data
+tests/unit > unit tests for code objects
+
+TODO
+=======
+remove the dependency on the database when running the rip script
