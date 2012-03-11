@@ -80,20 +80,6 @@ class Cell extends FoundationModel {
       imagedestroy($source);
       imagedestroy($destination);
 
-      
-      
-/*      $image_1 = imagecreatefrompng($this->get_temp_file_path());
-      $image_2 = imagecreatefrompng($this->get_cell_file_path());
-      
-      imagealphablending($image_1, true);
-      imagesavealpha($image_1, true);
-      
-      imagecopy($image_1, $image_2, 0, 0, 0, 0, 600, 300);
-      $res = imagepng($image_1, $this->get_cell_file_path());
-      
-      imagedestroy($image_1);
-      imagedestroy($image_2);
-*/
       return $res;
 
 

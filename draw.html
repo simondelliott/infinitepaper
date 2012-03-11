@@ -9,12 +9,14 @@
     <link rel="stylesheet" href="js/farbtastic/farbtastic.css" type="text/css" />
     <style>
       #canvas_container {
+          
       }
 
 
       #canvas{
         border: 1px solid grey;
         cursor: crosshair;
+        background-image: url(/content/cell_0_0.png);
       }
       #msg{
         font-size: small;
@@ -125,9 +127,8 @@
                 stroke_data: stroke_data
               },
               success: function(returned_data){
-                //alert(returned_data);
                 var d = new Date();
-                $("#img").attr("src", "/content/cell_0_0.png?" + d.getTime());
+                $('#canvas').css('background-image', "url(/content/cell_0_0.png?" + d.getTime()+")");
                 Drawing.context.clearRect ( 0 , 0 , 600 , 300 );
               }
             });
@@ -181,8 +182,6 @@
         <p>Your browser doesn't support canvas.</p>
       </canvas>
     </div>
-
-    <img id="img" src="/content/cell_0_0.png"/>
 
     <div id="msg">
       message
