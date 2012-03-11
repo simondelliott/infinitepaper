@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="js/farbtastic/farbtastic.js"></script>
+    <link rel="stylesheet" href="js/farbtastic/farbtastic.css" type="text/css" />
+    <style>
+      #canvas_container {
+      }
+
+
+      #canvas{
+        border: 1px solid grey;
+        cursor: crosshair;
+      }
+      #msg{
+        font-size: small;
+      }
+      #tools{
+        width: 22px;
+        padding: 5px 5px 5px 5px;
+        margin-right: 5px;
+        height: 300px;
+        float: left;
+      }
+
+      .button{
+        height: 20px;
+        width: 20px;
+        border: 1px solid grey;
+        cursor: pointer;
+        margin: 2px;
+      }
+      #color_button{
+        background-color: black;
+      }
+      #color_picker{
+        position: relative;
+        display: none;
+      }
+
+    </style>
+    <script>
+
+      var Drawing = (function(){
+        return{
+          context: null,
+          canvas: null,
+          started: false,
+          color: "#000000",
+          on_stroke: null,
+          init: function (can, on_stroke){
+            this.canvas = can;
+            this.context = this.canvas.getContext('2d');
+            this.on_stroke = on_stroke;
+            this.canvas.addEventListener('mousedown', Drawing.canvas_event, false);
+            this.canvas.addEventListener('mousemove', Drawing.canvas_event, false);
+            this.canvas.addEventListener('mouseup',   Drawing.canvas_event, false);
+            this.context.strokeStyle = this.color;
+            this.context.lineWidth = 5;
+            this.context.lineCap = "round";
+          },
+          canvas_event: function(ev){
+            ev._x = ev.pageX - $("#canvas").offset().left;
+            ev._y = ev.pageY - $("#canvas").offset().top;
+
+            var func = Drawing[ev.type];
+            if (func) {
+              func(ev);
+            }
+          },
+          mousedown: function(ev){
+            Drawing.context.beginPath();
+            Drawing.context.moveTo(ev._x, ev._y);
+            Drawing.started = true;
+          },
+          mouseup: function(ev){
+            if (Drawing.started) {
+              Drawing.mousemove(ev);
+              Drawing.started = false;
+              if (typeof Drawing.on_stroke == "function"){
+                Drawing.on_stroke();
+              }
+            }
+          },
+          mousemove: function(ev){
+            if (Drawing.started) {
+              Drawing.context.lineTo(ev._x, ev._y);
+              Drawing.context.strokeStyle = Drawing.color;
+              Drawing.context.stroke();
+            }
+          }
+        }
+      })();
+
+
+      var InfinitePaper = (function() {
+
+        // check if we have canvas support
+        var has_canvas = false;
+        var canvas = document.createElement("canvas");
+        if (canvas.getContext("2d")) {
+          has_canvas = true;
+        }
+
+        // no canvas, bail out.
+        if (!has_canvas) {
+          return {};
+        }
+
+        var has_image_data = !!(canvas.getContext("2d").getImageData);
+        var has_data_url = !!(canvas.toDataURL);
+
+        return{
+          save: function (stroke_data){
+            //alert("save called " + data);
+
+            $.ajax({
+              type:"POST",
+              url: "/cell/0/0",
+              data: {
+                stroke_data: stroke_data
+              },
+              success: function(returned_data){
+                //alert(returned_data);
+                var d = new Date();
+                $("#img").attr("src", "/content/cell_0_0.png?" + d.getTime());
+                Drawing.context.clearRect ( 0 , 0 , 600 , 300 );
+              }
+            });
+
+          }
+        };
+      })();
+
+      $(document).ready(function() {
+
+        $('#color_picker').farbtastic(
+          function(color){
+            Drawing.color = color;
+            $("#color_button").css("background-color",color);
+          }
+        );
+
+        Drawing.init(
+          document.getElementById('canvas'),
+          function (){
+            var can = document.getElementById("canvas");
+            var image_data = can.toDataURL("image/png");
+            InfinitePaper.save(image_data);
+          }
+        );
+
+        $("#color_button").click(function(){
+          $("#color_picker").toggle();
+        });
+
+      });
+
+    </script>
+  </head>
+  <body id="post">
+
+    <p>
+      Infinite paper
+    </p>
+
+    <div id="tools">
+      <div id="color_container">
+        <div id="hand_button" class="button"></div>
+        <div id="color_button" class="button"></div>
+        <div id="color_picker"></div>
+      </div>
+    </div>
+
+    <div id="canvas_container">
+      <canvas id="canvas" width="600" height="300">
+        <p>Your browser doesn't support canvas.</p>
+      </canvas>
+    </div>
+
+    <img id="img" src="/content/cell_0_0.png"/>
+
+    <div id="msg">
+      message
+    </div>
+  </body>
+</html>

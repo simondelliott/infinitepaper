@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+
+    <style>
+      #canvas_container {
+        background: url(gfx/background.png);
+      }
+
+      #canvas{
+        border: 1px solid black;
+      }
+    </style>
+    <script>
+      var c;
+      var balls = new Array();
+      var h;
+      var w;
+      var g = 0.05;
+ 
+      var InfinitePaper = (function() {
+
+        // check if we have canvas support
+        var has_canvas = false;
+        var canvas = document.createElement("canvas");
+        if (canvas.getContext("2d")) {
+          has_canvas = true;
+        }
+
+        // no canvas, bail out.
+        if (!has_canvas) {
+          return {};
+        }
+
+        var has_image_data = !!(canvas.getContext("2d").getImageData);
+        var has_data_url = !!(canvas.toDataURL);
+
+        return{
+          save: function (stroke_data){
+            //alert("save called " + data);
+
+            $.ajax({
+              type:"POST",
+              url: "/cell/0/0",
+              data: {
+                stroke_data: stroke_data
+              },
+              success: function(returned_data){
+                alert(returned_data);
+              }
+            });
+
+          }
+        };
+      })();
+
+      function Ball(){return {
+          x: 100,
+          y: 100,
+          r: 10,
+          color: 0xffffff,
+          xv: 1,
+          yv: 1,
+          randomize:function(){
+            this.color = parseInt(0xffffff * Math.random());
+            this.r = 2 + (20 * Math.random());
+            this.x =  this.r + ((w -(2 * this.r)) * Math.random());
+            this.y = this.r + ((h - (2 * this.r)) * Math.random());
+            this.xv = get_random(5*Math.random());
+            this.yv = get_random(5*Math.random());
+          },
+          move: function (){
+    
+            this.yv += g;
+
+            if(this.y + this.r > h)
+              this.yv *= -1;
+    
+            if(this.x + this.r > w || this.x < this.r )
+              this.xv *= -1;
+
+            this.x += this.xv;
+            this.y += this.yv;
+
+
+          },
+          draw: function(){
+            this.move();
+            c.beginPath();
+            c.fillStyle = "#" + this.color.toString(16);
+            //c.fillStyle = "rgba(123, 12, 78, 0.1)";
+            c.arc(this.x, this.y, this.r, 0, Math.PI*2, true);
+            c.closePath();
+            c.fill();
+          }
+        };}
+
+      function draw(){
+
+        c.clearRect ( 0 , 0 , w , h );
+        //c.fillStyle = "rgba(0, 0, 0, 0)";
+        //c.fillStyle = "#fff";
+        //c.fillRect(0, 0, $("#canvas").width(), $("#canvas").height());
+
+        for (var i =0; i<balls.length; i++)
+          balls[i].draw();
+      }
+
+
+      function get_random(seed){
+        return (Math.random() * seed) - (seed / 2);
+      }
+
+      $(document).ready(function() {
+
+        c = $('#canvas')[0].getContext("2d");
+        h = $('#canvas').height();
+        w = $('#canvas').width();
+
+        for (var i=0; i<30; i++){
+          var b = new Ball();
+          b.randomize();
+          balls[balls.length] = b;
+        }
+
+
+        $("#get_image_data").click(function (){
+
+          var can = document.getElementById("canvas");
+          var image_data = can.toDataURL("image/png");
+          InfinitePaper.save(image_data);
+
+        });
+
+        setInterval(draw, 15);
+
+      });
+
+    </script>
+  </head>
+  <body id="post">
+
+    <h1>HTML5 bouncing balls example code</h1>
+    <p>
+      This example code uses the HTML5 canvas object with a simple animation.
+    </p>
+
+
+    <div id="canvas_container">
+      <canvas id="canvas" width="600" height="300">
+        <p>Your browser doesn't support canvas.</p>
+      </canvas>
+    </div>
+
+  <p>
+    <a href="#" id="get_image_data">get image data</a>
+    <a href="http://simondelliott.com">simondelliott.com</a>
+  </p>
+</body>
+</html>

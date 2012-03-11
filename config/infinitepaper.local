@@ -1,0 +1,18 @@
+<VirtualHost infinitepaper.local >
+        ServerAlias www.dev.example.com
+        #Basic setup
+        ServerAdmin webmaster@mydomain.com
+        ServerName infinitepaper.local
+        DocumentRoot /home/simon/work/developmentcollective/infinite_paper
+        CustomLog /home/simon/work/developmentcollective/infinite_paper/infinitepaper.local.log combined
+
+        <Directory /home/simon/work/developmentcollective/infinite_paper >
+          Options FollowSymLinks MultiViews
+          AllowOverride All
+          Order allow,deny
+          Allow from all
+        </Directory>
+</VirtualHost>
+
+
+
