@@ -30,7 +30,6 @@ class CellControler extends ApplicationControler{
     }
     
     public function show(){
-
         debug("show called");
         debug("xcord=" . $this->params["xcord"]);
         debug("ycord=" . $this->params["ycord"]);

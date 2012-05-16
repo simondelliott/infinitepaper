@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta charset="UTF-8">
+    <script src="/js/jquery.min.js"></script>
     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
     <script type="text/javascript" src="js/farbtastic/farbtastic.js"></script>
     <link rel="stylesheet" href="js/farbtastic/farbtastic.css" type="text/css" />
@@ -11,13 +11,24 @@
       #canvas_container {
           
       }
-
-
+      
+      #cell{
+          position: relative;
+          height: 300px;
+          width: 600px;
+      }
+      
       #canvas{
         border: 1px solid grey;
         cursor: crosshair;
+        position: relative;
+        height: 300px;
+        width: 600px;
         background-image: url(/content/cell_0_0.png);
       }
+      
+      
+      
       #msg{
         font-size: small;
       }
@@ -35,9 +46,16 @@
         border: 1px solid grey;
         cursor: pointer;
         margin: 2px;
+        cursor: pointer;
       }
       #color_button{
         background-color: black;
+      }
+      #move_button{
+        background-color: teal;
+      }
+      #draw_button{
+        background-color: pink;
       }
       #color_picker{
         position: relative;
@@ -49,6 +67,7 @@
 
       var Drawing = (function(){
         return{
+          mode: "draw",
           context: null,
           canvas: null,
           started: false,
@@ -78,6 +97,7 @@
             Drawing.context.beginPath();
             Drawing.context.moveTo(ev._x, ev._y);
             Drawing.started = true;
+            
           },
           mouseup: function(ev){
             if (Drawing.started) {
@@ -94,7 +114,18 @@
               Drawing.context.strokeStyle = Drawing.color;
               Drawing.context.stroke();
             }
+          },
+          draw: function(){
+            //alert("Draw mode called current mode is " + this.mode);
+            this.mode = "draw";
+            $(this.canvas).css('cursor', 'crosshair');
+          },
+          move: function(){
+            //alert("Move mode called current mode is " + this.mode);
+            this.mode = "move";
+            $(this.canvas).css('cursor', 'move');
           }
+
         }
       })();
 
@@ -117,6 +148,7 @@
         var has_data_url = !!(canvas.toDataURL);
 
         return{
+          mode: "draw",
           save: function (stroke_data){
             //alert("save called " + data);
 
@@ -139,6 +171,8 @@
 
       $(document).ready(function() {
 
+        $("#cell").css('background-image', "url(/content/cell_0_0.png)");
+
         $('#color_picker').farbtastic(
           function(color){
             Drawing.color = color;
@@ -159,6 +193,13 @@
           $("#color_picker").toggle();
         });
 
+        $("#move_button").click(function(){
+          Drawing.move();
+        });
+        $("#draw_button").click(function(){
+          Drawing.draw();
+        });
+
       });
 
     </script>
@@ -171,20 +212,22 @@
 
     <div id="tools">
       <div id="color_container">
-        <div id="hand_button" class="button"></div>
+        <div id="draw_button" class="button"></div>
+        <div id="move_button" class="button"></div>
         <div id="color_button" class="button"></div>
         <div id="color_picker"></div>
       </div>
     </div>
 
     <div id="canvas_container">
-      <canvas id="canvas" width="600" height="300">
-        <p>Your browser doesn't support canvas.</p>
-      </canvas>
+        <div id="cell" ></div>
+        <canvas id="canvas" width="600" height="300">
+            <p>Your browser doesn't support canvas.</p>
+        </canvas>
     </div>
 
     <div id="msg">
-      message
+      message fish
     </div>
   </body>
 </html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="/js/jquery.min.js"></script>
+    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="js/farbtastic/farbtastic.js"></script>
+    <link rel="stylesheet" href="js/farbtastic/farbtastic.css" type="text/css" />
+    <style>
+
+        #tile_canvas{
+            background-color: blue;
+            position: absolute;
+            border: 1px solid black;
+        } 
+
+        #drawing_canvas{
+            background-color: pink;
+            position: absolute;
+        } 
+
+        #thing{
+            margin-left: 400px;
+            width: 150px;
+            height: 150px;
+            background-color: blueviolet;
+        }
+        
+        
+    </style>
+    <script>
+ 
+function set_position_to_element(from$, to$){
+    from$.css("top", to$.css("top"));
+    from$.css("left", to$.css("left"));
+    from$.css("height", to$.css("height"));
+    from$.css("width", to$.css("width"));
+}
+
+function add_floats(){
+    var ret = 0.0;
+    for (var i in arguments)
+        ret += parseFloat(arguments[i])
+    return ret;
+}
+function subtract_floats(){
+    var ret = 0.0;
+    var j = 0;
+    for (var i in arguments){
+        if(j==0)
+            ret = parseFloat(arguments[i]);
+        else
+            ret -= parseFloat(arguments[i]);
+        j++;
+        
+    }
+    return ret;
+}
+
+function draw(container$){
+
+
+    container$.append("<canvas id='tile_canvas'></canvas>");
+    container$.append("<canvas id='drawing_canvas'></canvas>");
+
+    drawing_canvas$ = $("#drawing_canvas");
+    tile_canvas$ = $("#tile_canvas");
+    
+    // make the drawing canvass appear on top of the container
+    set_position_to_element(drawing_canvas$,container$);
+
+    //set the tile canvass to be 9 times the size of the drawing canvass, with the drawing canvass in the middle
+    tile_canvas$.css("top", subtract_floats(drawing_canvas$.css("top"), drawing_canvas$.css("height")));
+    tile_canvas$.css("left", subtract_floats(drawing_canvas$.css("left"), drawing_canvas$.css("width")));
+    tile_canvas$.css("height", parseFloat(drawing_canvas$.css("height")) * 3);
+    tile_canvas$.css("width", parseFloat(drawing_canvas$.css("width")) * 3);
+
+    return;
+
+    
+    var offset_left = container$.css("left");
+    var offset_top = container$.css("top");
+    
+    //create tiles
+    for (var i=0; i<9; i++){
+        i_mod_3 = i % 3;
+        $("#tile_container").append("<div id='tile_" + i + "' class='tile'>" + i + "</div>");
+        var left = (i_mod_3) * 100 + offset_left;
+
+        var tile$ = $("#tile_" + i);
+        tile$.css("left", left);
+        tile$.css("top", (Math.floor(i/3)*100)+ offset_top);
+    }
+ }
+ 
+    $(document).ready(function() {    
+        
+        
+        draw($("#thing"));
+        
+        
+    });
+  
+    </script>
+  </head>
+  <body id="post">
+
+    <p>
+      Infinite paper - move
+    </p>
+
+    
+    <div id="thing"></div>
+
+
+    <div id="msg">
+      message
+    </div>
+  </body>
+</html>

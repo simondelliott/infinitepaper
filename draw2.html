@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <script src="/js/jquery.min.js"></script>
+    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="js/farbtastic/farbtastic.js"></script>
+    <link rel="stylesheet" href="js/farbtastic/farbtastic.css" type="text/css" />
+    <style>
+
+      #mode{
+        background-color: grey;
+        width: 100px;
+      }
+        
+      #canvas_container {
+          
+      }
+      
+      #tools{
+        width: 22px;
+        padding: 5px 5px 5px 5px;
+        margin-right: 5px;
+        /*height: 300px;*/
+      }
+
+      .button{
+        height: 20px;
+        width: 20px;
+        border: 1px solid grey;
+        cursor: pointer;
+        margin: 2px;
+        cursor: pointer;
+        z-index: 100002;
+      }
+      #color_button{
+        background-color: black;
+      }
+      #move_button{
+        background-color: teal;
+      }
+      #draw_button{
+        background-color: pink;
+      }
+      #color_picker{
+        position: relative;
+        display: none;
+      }
+
+    #tile_canvas{
+        background-color: #f5f4d1; 
+        background-image: url(../gfx/background.png);
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        border: 1px solid black;
+        z-index: -100;
+    } 
+
+    #drawing_canvas{
+        /* background-color: pink; */
+        border: 1px solid black;
+        position: absolute;
+        z-index: 1000;
+    } 
+
+    #thing{
+        border: 1px solid grey;
+        height: 300px;
+        width: 600px;
+    }
+
+      
+    </style>
+    <script>
+        
+function set_position_to_element(from$, to$){
+    from$.css("top", to$.css("top"));
+    from$.css("left", to$.css("left"));
+    from$.css("height", to$.css("height"));
+    from$.css("width", to$.css("width"));
+}
+
+function add_floats(){
+    var ret = 0.0;
+    for (var i in arguments)
+        ret += parseFloat(arguments[i])
+    return ret;
+}
+function subtract_floats(){
+    var ret = 0.0;
+    var j = 0;
+    for (var i in arguments){
+        if(j==0)
+            ret = parseFloat(arguments[i]);
+        else
+            ret -= parseFloat(arguments[i]);
+        j++;
+        
+    }
+    return ret;
+}
+
+      var Drawing = (function(){
+        return{
+          mode: "draw",
+          context: null,
+          canvas: null,
+          started: false,
+          color: "#000000",
+          on_stroke: null,
+          drawing_canvas$: null,
+          tile_canvas$: null,
+          mouse_event_handeler: null,
+          mouse_x: null,
+          mouse_y: null,
+          x: 0,
+          y: 0,
+          init: function (container$, can, on_stroke){
+            
+            //here
+            container$.append("<canvas id='tile_canvas'  width='600' height='300'></canvas>");
+            container$.append("<canvas id='drawing_canvas'  width='600' height='300'></canvas>");
+
+            this.drawing_canvas$ = $("#drawing_canvas");
+            this.tile_canvas$ = $("#tile_canvas");
+
+            // make the drawing canvass appear on top of the container
+            set_position_to_element(this.drawing_canvas$,container$);
+
+            //set the tile canvass to be 9 times the size of the drawing canvass, with the drawing canvass in the middle
+            this.tile_canvas$.css("top", subtract_floats(this.drawing_canvas$.css("top"), this.drawing_canvas$.css("height")));
+            this.tile_canvas$.css("left", subtract_floats(this.drawing_canvas$.css("left"), this.drawing_canvas$.css("width")));
+            this.tile_canvas$.css("height", parseFloat(this.drawing_canvas$.css("height")) * 3);
+            this.tile_canvas$.css("width", parseFloat(this.drawing_canvas$.css("width")) * 3);
+            //here
+              
+            this.canvas = document.getElementById('drawing_canvas');
+            this.context = this.canvas.getContext('2d');
+            this.on_stroke = on_stroke;
+            this.canvas.addEventListener('mousedown', Drawing.canvas_event, false);
+            this.canvas.addEventListener('mousemove', Drawing.canvas_event, false);
+            this.canvas.addEventListener('mouseup',   Drawing.canvas_event, false);
+            this.context.strokeStyle = this.color;
+            this.context.lineWidth = 5;
+            this.context.lineCap = "round";
+            
+            this.move();
+          },
+          canvas_event: function(ev){
+            ev._x = ev.pageX - Drawing.drawing_canvas$.offset().left;
+            ev._y = ev.pageY - Drawing.drawing_canvas$.offset().top;
+
+            var func = Drawing.mouse_event_handeler[ev.type]; 
+            if (func) {
+              func(ev);
+            }
+          },
+          mouse_events: {
+              draw: {
+                mousedown: function(ev){
+                    Drawing.context.beginPath();
+                    Drawing.context.moveTo(ev._x, ev._y);
+                    Drawing.started = true;
+
+                },
+                mouseup: function(ev){
+                    if (Drawing.started) {
+                        Drawing.mouse_events.draw.mousemove(ev);
+                        Drawing.started = false;
+                        if (typeof Drawing.on_stroke == "function"){
+                            Drawing.on_stroke(Drawing.canvas);
+                        }
+                    }
+                },
+                mousemove: function(ev){
+                    if (Drawing.started) {
+                        Drawing.context.lineTo(ev._x, ev._y);
+                        Drawing.context.strokeStyle = Drawing.color;
+                        Drawing.context.stroke();
+                    }
+                }
+              },
+              move: {
+                mousedown: function(ev){
+                    Drawing.mouse_x = ev._x;
+                    Drawing.mouse_y = ev._y;
+                    Drawing.started = true;
+                },
+                mouseup: function(ev){
+                    if (Drawing.started) {
+                        Drawing.mouse_events.move.mousemove(ev);
+                        Drawing.started = false;
+                    }
+                },
+                mousemove: function(ev){
+                    if (Drawing.started) {
+
+                        // find the distance traveled
+                        var x_dist = ev._x - Drawing.mouse_x;
+                        var y_dist = ev._y - Drawing.mouse_y;
+                    
+                        // move the background by that distance 
+                        $("#tile_canvas").css("left", parseFloat($("#tile_canvas").css("left")) + x_dist);
+                        $("#tile_canvas").css("top", parseFloat($("#tile_canvas").css("top")) + y_dist);
+                        
+                        Drawing.mouse_x = ev._x;
+                        Drawing.mouse_y = ev._y;
+                        
+                        debug("move: x_dist=" + x_dist  + " ev._x=" + ev._x + " css=" + $("#tile_canvas").css("left"));
+                        
+                    }
+                }
+              }
+          },
+          draw: function(){
+            //alert("Draw mode called current mode is " + this.mode);
+            this.mode = "draw";
+            this.mouse_event_handeler = this.mouse_events[this.mode];
+            $(this.canvas).css('cursor', 'crosshair');
+            this.set_mode_label();
+          },
+          move: function(){
+            //alert("Move mode called current mode is " + this.mode);
+            this.mode = "move";
+            this.mouse_event_handeler = this.mouse_events[this.mode];
+            $(this.canvas).css('cursor', 'move');
+            this.set_mode_label();
+          },
+          set_mode_label: function(){
+              $("#mode").text(this.mode);
+          }
+
+        }
+      })();
+
+      /** This object represents the server
+      * 
+      */
+      var InfinitePaper = (function() {
+
+        // check if we have canvas support
+        var has_canvas = false;
+        var canvas = document.createElement("canvas");
+        if (canvas.getContext("2d")) {
+          has_canvas = true;
+        }
+
+        // no canvas, bail out.
+        if (!has_canvas) {
+          return {};
+        }
+
+        var has_image_data = !!(canvas.getContext("2d").getImageData);
+        var has_data_url = !!(canvas.toDataURL);
+
+        return{
+          cell_width: 600,
+          cell_hieght: 300,
+          save: function (stroke_data){
+            
+            $.ajax({
+              type:"POST",
+              url: "/cell/0/0",
+              data: {
+                stroke_data: stroke_data
+              },
+              success: function(returned_data){
+                var d = new Date();
+                $('#drawing_canvas').css('background-image', "url(/content/cell_0_0.png?" + d.getTime()+")");
+                Drawing.context.clearRect ( 0 , 0 , 600 , 300 );
+              }
+            });
+          },
+          get_images: function(x,y,width,hieght){
+            
+            var images = new Object();
+            
+            var cell_xcord = Math.floor(x / this.cell_width);
+            var cell_ycord = Math.floot(x / this.cell_hieght);
+            
+            var cell_xcord_to = Math.ceil((x + width)/this.cell_width);
+            var cell_ycord_to = Math.ceil((y + hieght)/this.cell_hieght);
+            
+            for (var i = cell_xcord; i <= cell_xcord_to; i++){
+                for (var j = cell_ycord; j <= cell_ycord_to; j++){
+                    images[i][j] = new Image("/")
+                }
+            }
+            
+            var e = new Image("");
+            
+            
+            return images;
+            
+          }
+        };
+      })();
+
+      $(document).ready(function() {
+
+        alert(5%3);
+
+
+        $('#color_picker').farbtastic(
+          function(color){
+            Drawing.color = color;
+            $("#color_button").css("background-color",color);
+          }
+        );
+
+        Drawing.init(
+          $("#thing"),
+          document.getElementById('canvas'),
+          function (canvas){
+            //var can = document.getElementById("canvas");
+            var image_data = canvas.toDataURL("image/png");
+            InfinitePaper.save(image_data);
+          }
+        );
+
+        $("#move_button").click(function(){
+          Drawing.move();
+        });
+
+        
+        $("#draw_button").click(function(){
+          Drawing.draw();
+        });
+
+        $("#color_button").click(function(){
+          $("#color_picker").toggle();
+        });
+
+      });
+
+function debug(msg){
+    
+    console.log(msg);
+
+}
+
+    </script>
+  </head>
+  <body id="post">
+
+    <p>
+      Infinite paper
+    </p>
+
+    <div id="tools">
+        <div id="draw_button" class="button">D</div>
+        <div id="move_button" class="button">M</div>
+        <div id="color_container">
+            <div id="color_button" class="button"></div>
+            <div id="color_picker"></div>
+        </div>
+    </div>
+
+    <div id="mode"></div>
+
+    <div id="thing"></div>
+    
+    
+  </body>
+</html>
