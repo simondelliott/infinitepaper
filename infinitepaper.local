@@ -1,20 +1,14 @@
-<VirtualHost infinitepaper.local >
-        ServerAlias www.dev.example.com
-        #Basic setup
-        ServerAdmin webmaster@mydomain.com
+<VirtualHost *:80 >
         ServerName infinitepaper.local
+	ServerAlias infinitepaper.local
         DocumentRoot /Users/simondelliott/work/developmentcollective/infinite_paper
         CustomLog /Users/simondelliott/work/developmentcollective/infinite_paper/infinitepaper.log combined
 
-        
-
         <Directory /Users/simondelliott/work/developmentcollective/infinite_paper >
                 AllowOverride All
-
                 Order Deny,Allow
                 Allow from all
-                # Don't show indexes for directories
-                Options -Indexes
+		Options +Indexes
         </Directory>
 </VirtualHost>
 
