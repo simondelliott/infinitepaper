@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map-canvas { height: 100% }
+    </style>
+    <script type="text/javascript"
+      src="http://maps.googleapis.com/maps/api/js?key=AIzaSyBsgdTiDTR6kmpvYsaHk2IQprOjZD_FyWk&sensor=true">
+    </script>
+    <script type="text/javascript">
+/*
+function initialize() {
+        
+    var mapOptions = {
+      center: new google.maps.LatLng(-34.397, 150.644),
+      zoom: 10,
+      overviewMapControl: false,
+      tilt: 20,
+      zoomControl: false,
+      streetViewControl: false,
+      panControl: false,
+      mapTypeControl: false
+    };
+
+    var map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+}
+*/
+
+
+console.log(" hello world ");
+
+var map;
+
+
+for (var i in navigator.geolocation){
+    console.log(navigator.geolocation[i]);
+}
+
+alert(navigator.geolocation);
+
+function initialize() {
+  var mapOptions = {
+    zoom: 6
+  };
+  map = new google.maps.Map(document.getElementById('map-canvas'),
+      mapOptions);
+
+  // Try HTML5 geolocation
+  if(navigator.geolocation) 
+  {
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            var pos = new google.maps.LatLng(position.coords.latitude,position.coords.longitude);
+
+            var infowindow = new google.maps.InfoWindow({
+              map: map,
+              position: pos,
+              content: 'Location found using HTML5.'
+            });
+
+            map.setCenter(pos);
+        }, 
+        function(err) {
+            console.warn('ERROR(' + err.code + '): ' + err.message);
+            
+            var options = {
+              map: map,
+              position: new google.maps.LatLng(60, 105),
+              content: "failed geo loc"
+            };
+
+            var infowindow = new google.maps.InfoWindow(options);
+            map.setCenter(options.position);
+  
+        });
+  } 
+  else {
+    alert ("no gel loc");
+    // Browser doesn't support Geolocation
+    handleNoGeolocation(false);
+  }
+}
+
+function handleNoGeolocation(errorFlag) {
+  if (errorFlag) {
+    var content = 'Error: GGRRRR The Geolocation service failed.';
+  } else {
+    var content = 'Error: Your browser doesn\'t support geolocation.';
+  }
+
+  var options = {
+    map: map,
+    position: new google.maps.LatLng(60, 105),
+    content: content
+  };
+
+  var infowindow = new google.maps.InfoWindow(options);
+  map.setCenter(options.position);
+}
+
+
+google.maps.event.addDomListener(window, 'load', initialize);
+      
+    </script>
+  </head>
+  <body>
+    <div id="map-canvas"/>
+  </body>
+</html>
