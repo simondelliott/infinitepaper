@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript">
+
+console.log("geolocation_test loading");
+    
+
+var options = {
+  enableHighAccuracy: true,
+  timeout: 5000,
+  maximumAge: 0
+};
+
+function success(pos) {
+  var crd = pos.coords;
+  console.log('Your current position is:');
+  console.log('Latitude : ' + crd.latitude);
+  console.log('Longitude: ' + crd.longitude);
+  console.log('More or less ' + crd.accuracy + ' meters.');
+};
+
+function error(err) {
+  console.warn('ERROR(' + err.code + '): ' + err.message);
+};
+
+window.onload = function() {
+    console.log("window.onload");
+    navigator.geolocation.getCurrentPosition(success, error, options);
+}
+
+
+
+    </script>
+  </head>
+  <body >
+      <h1>geo location test 2</h1>
+  </body>
+</html>
